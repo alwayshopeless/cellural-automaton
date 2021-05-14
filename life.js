@@ -1,14 +1,14 @@
 var canvas = document.getElementById('life');
 const canvasParams = {
-    w: 40,
-    h: 40,
+    w: 20,
+    h: 20,
 };
 canvas.width = canvas.width = canvasParams.w;
 canvas.height = canvas.height = canvasParams.h;
 
 var ctx = canvas.getContext('2d');
 
-var stack = [];
+var stack = {};
 var stackX = [];
 var stackY = [];
 var neighbors_matrix = [
@@ -61,19 +61,29 @@ function gen_neighbors(coords) {
         neighbor_finded = false;
         let neighborPos = sumOfCoords(neighbors_matrix[neighborKey], cellCoords);
         if (inCoorsBorder(neighborPos)) {
-            for (neighborKey in stack) {
-                let neighbor = stack[neighborKey];
 
-                if (isIdentyWeak(neighborPos, neighbor.coords)) {
-                    neighbors_result[neighborKey] = neighbor;
-                    neighbor_finded = true;
-                }
-            }
-            if (neighbor_finded == false) {
-                neighbors_result[neighborKey] = new Cell(neighborPos);
-            }
         }
     }
+}
+
+function search_in_stack_by_coords(stack, coords) {
+    return stack[`${coords.x}+${coords.y}`];
+}
+
+function get_count_alive_neighbors(cellObj) {
+    let alive_count = 0;
+    for (neighborKey in cellObj.neighbors) {
+        if (cellObj.neighbors[neighborKey].state == 1) {
+            alive_count++;
+        }
+    }
+    return alive_count;
+}
+
+function get_random_int(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 class Cell {
@@ -81,17 +91,27 @@ class Cell {
         this.state = 0;
         this.coords = coords;
         this.neighbors = [];
+        this.set_rand_state();
     }
 
     set_neighbors(neighbors) {
         this.neighbors = neighbors;
+    }
+
+    set_rand_state(){
+        this.state = get_random_int(0, 1);
+    }
+
+    set_state(state){
+        this.state = state;
     }
 }
 
 for (let i = 0; i < canvasParams.w; i++) {
     for (let j = 0; j < canvasParams.h; j++) {
         let new_cell = new Cell({x: i, y: j});
-        stack.push(new_cell);
+        let temp_string = `${i}+${j}`;
+        stack[temp_string] = new_cell;
     }
 }
 
@@ -106,33 +126,29 @@ for (cellKey in stack) {
         var definedNeightbor = null;
         neighbor_finded = false;
         var neighborPos = sumOfCoords(neighbors_matrix[neighborKey], cellCoords);
-        // console.log(neighborPos);
-        // break;
         if (inCoorsBorder(neighborPos)) {
-            for (stackKey in stack) {
-                var neighbor = stack[stackKey];
-                if (isIdentyWeak(neighborPos, neighbor.coords)) {
-                    neighbors_result[neighborKey] = neighbor;
-                    neighbor_finded = true;
-                    if (neighbor_finded) {
-                    }
-                    // break;
-                }
-            }
-            if (neighbor_finded == false) {
-                // neighbors_result[neighborKey] = new Cell(neighborPos);
-            }
+            var neighbor = search_in_stack_by_coords(stack, neighborPos);
+            neighbors_result[neighborKey] = neighbor;
         }
     }
     cell.set_neighbors(neighbors_result);
     // break;
 }
 
-for (var celly in stack) {
 
+var states = [3, 8, 5];
+var statesKey = 0;
+// setInterval(function () {
+ctx.clearRect(0, 0, canvasParams.w, canvasParams.h);
+for (var celly in stack) {
     var celly = stack[celly];
-    if (Object.keys(celly.neighbors).length == 3) {
+    if (Object.keys(celly.neighbors).length == states[statesKey]) {
         ctx.fillStyle = "rgba(0,0,0,1)";
         ctx.fillRect(celly.coords.x, celly.coords.y, 1, 1);
     }
 }
+statesKey++;
+if (statesKey > 2) {
+    statesKey = 0;
+}
+// }, 100);
