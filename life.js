@@ -5,6 +5,7 @@ const canvasParams = {
 };
 canvas.width = canvas.width = canvasParams.w;
 canvas.height = canvas.height = canvasParams.h;
+var render_speed = 100;
 
 var ctx = canvas.getContext('2d');
 
@@ -98,13 +99,16 @@ function init_iteraton(stack) {
         let cell = stack[cell_key];
         let alive_count = get_count_alive_neighbors(cell);
 
-        if (cell.state == 0) {
-            if (alive_count == 3) {
+        if (cell.state === 0) {
+            if (alive_count === 3) {
                 cell.set_state(1);
             }
-        } else if (cell.state == 1) {
-            if ((alive_count == 2) || (alive_count == 3)) {
+        } else if (cell.state === 1) {
+            if ((alive_count === 2) || (alive_count === 3)) {
                 cell.set_state(1);
+            // } else
+            //     if (alive_count === 5) {
+            //     cell.set_state(0);
             } else {
                 cell.set_state(0);
             }
@@ -180,8 +184,7 @@ var statesKey = 0;
 //     init_iteraton(stack);
 // }
 
-
-setInterval(function () {
+let drawer = function () {
     ctx.clearRect(0, 0, canvasParams.w, canvasParams.h);
     for (var celly in stack) {
         var celly = stack[celly];
@@ -192,7 +195,14 @@ setInterval(function () {
         }
     }
     init_iteraton(stack);
-}, 1000 / 60);
+    setTimeout(function () {
+        drawer();
+    }, 1000 / render_speed);
+}
+drawer();
+// setTimeout(function () {
+//     drawer();
+// }, render_speed);
 // }, 500);
 
 canvas.addEventListener("mousemove", function (e) {
@@ -207,8 +217,23 @@ canvas.addEventListener("mousemove", function (e) {
     if (typeof (cell) !== "undefined") {
         cell.set_state(1);
         for (const cellKey in cell.neighbors) {
-            cell.neighbors[cellKey].set_state(1);
+            if (cellKey % 2 == 0) {
+
+                cell.neighbors[cellKey].set_state(1);
+            }
         }
     }
+});
+
+let fps_label = document.getElementById("fps_label");
+document.getElementById("render_speed").addEventListener("input", function (e) {
+    render_speed = parseInt(e.currentTarget.value);
+    if (render_speed == 61) {
+        render_speed = 0;
+        fps_label.innerText = `MAX FPS(no frame time limit)`;
+    } else {
+        fps_label.innerText = `${render_speed} FPS`;
+    }
+
 
 });
