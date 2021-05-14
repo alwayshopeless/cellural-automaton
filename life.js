@@ -1,7 +1,7 @@
 var canvas = document.getElementById('life');
 const canvasParams = {
-    w: 20,
-    h: 20,
+    w: 100,
+    h: 100,
 };
 canvas.width = canvas.width = canvasParams.w;
 canvas.height = canvas.height = canvasParams.h;
@@ -33,9 +33,6 @@ function isIdentyWeak(obj1, obj2) {
     return false;
 }
 
-function get_count_living_neighbors(cellObj) {
-
-}
 
 function sumOfCoords(coords1, coords2) {
     return {x: coords1.x + coords2.x, y: coords1.y + coords2.y,}
@@ -49,22 +46,6 @@ function inCoorsBorder(coords) {
     return false;
 }
 
-function gen_neighbors(coords) {
-    neighbors_result = [];
-    // for (cellKey in stack) {
-    //     let cell = stack[cellKey];
-    //     let cellCoords = cell.coords;
-    let cellCoords = coords;
-
-    for (let neighborKey in neighbors_matrix) {
-        let definedNeightbor = null;
-        neighbor_finded = false;
-        let neighborPos = sumOfCoords(neighbors_matrix[neighborKey], cellCoords);
-        if (inCoorsBorder(neighborPos)) {
-
-        }
-    }
-}
 
 function search_in_stack_by_coords(stack, coords) {
     return stack[`${coords.x}+${coords.y}`];
@@ -80,6 +61,25 @@ function get_count_alive_neighbors(cellObj) {
     return alive_count;
 }
 
+function init_iteraton(stack) {
+    for (let cell_key in stack) {
+        let cell = stack[cell_key];
+        let alive_count = get_count_alive_neighbors(cell);
+
+        if (cell.state == 0) {
+            if (alive_count == 3) {
+                cell.set_state(1);
+            }
+        } else if (cell.state == 1) {
+            if ((alive_count !== 2) && (alive_count !== 3)) {
+                cell.set_state(1);
+            } else {
+                cell.set_state(0);
+            }
+        }
+    }
+}
+
 function get_random_int(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -91,18 +91,23 @@ class Cell {
         this.state = 0;
         this.coords = coords;
         this.neighbors = [];
-        this.set_rand_state();
+        // this.set_rand_state();
     }
 
     set_neighbors(neighbors) {
         this.neighbors = neighbors;
     }
 
-    set_rand_state(){
-        this.state = get_random_int(0, 1);
+    set_rand_state() {
+        this.state = 0;
+        if (get_random_int(0, 1) == 1) {
+            if (get_random_int(0, 1) == 1) {
+                this.state = 1;
+            }
+        }
     }
 
-    set_state(state){
+    set_state(state) {
         this.state = state;
     }
 }
@@ -138,17 +143,32 @@ for (cellKey in stack) {
 
 var states = [3, 8, 5];
 var statesKey = 0;
-// setInterval(function () {
-ctx.clearRect(0, 0, canvasParams.w, canvasParams.h);
-for (var celly in stack) {
-    var celly = stack[celly];
-    if (Object.keys(celly.neighbors).length == states[statesKey]) {
-        ctx.fillStyle = "rgba(0,0,0,1)";
-        ctx.fillRect(celly.coords.x, celly.coords.y, 1, 1);
+
+// for (let i = 0; i < 100; i++){
+//     init_iteraton(stack);
+// }
+
+
+setInterval(function () {
+    ctx.clearRect(0, 0, canvasParams.w, canvasParams.h);
+    for (var celly in stack) {
+        var celly = stack[celly];
+        if (celly.state == 1) {
+            ctx.fillStyle = "rgba(0,0,0,1)";
+            ctx.fillRect(celly.coords.x, celly.coords.y, 1, 1);
+        }
     }
-}
-statesKey++;
-if (statesKey > 2) {
-    statesKey = 0;
-}
-// }, 100);
+    init_iteraton(stack);
+}, 1000/60);
+
+canvas.addEventListener("mousemove", function (e){
+    let boundingRect = e.target.getBoundingClientRect();
+    console.log(`x: ${e.clientX}, y: ${e.clientY}`);
+    console.log(e.target.getBoundingClientRect());
+    console.log(`x: ${e.clientX - boundingRect.x}, y: ${e.clientY - boundingRect.y}`);
+    let realX = e.clientX - boundingRect.x;
+    let realY = e.clientY - boundingRect.y;
+    let cell = search_in_stack_by_coords(stack, {x: realX, y: realY});
+    console.log(cell);
+    cell.set_state(1);
+});
