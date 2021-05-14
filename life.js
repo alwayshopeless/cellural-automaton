@@ -33,6 +33,38 @@ function isIdentyWeak(obj1, obj2) {
     return false;
 }
 
+function get_rand_color_num() {
+    return get_random_int(0, 255);
+    // return 0;
+}
+
+function get_rand_color() {
+    let red = get_rand_color_num();
+    let blue = get_rand_color_num();
+    let green = get_rand_color_num();
+
+    let value = get_random_int(0, 2);
+
+    switch (value) {
+        case 0:
+            red = 255;
+            blue = 0;
+            green = 0;
+            break;
+        case 1:
+            blue = 255;
+            red = 0;
+            green = 0;
+            break;
+        case 2:
+            green = 255;
+            blue = 0;
+            red = 0;
+            break;
+    }
+
+    return `rgba(${red}, ${blue}, ${green}, 1)`;
+}
 
 function sumOfCoords(coords1, coords2) {
     return {x: coords1.x + coords2.x, y: coords1.y + coords2.y,}
@@ -71,7 +103,7 @@ function init_iteraton(stack) {
                 cell.set_state(1);
             }
         } else if (cell.state == 1) {
-            if ((alive_count !== 2) && (alive_count !== 3)) {
+            if ((alive_count == 2) || (alive_count == 3)) {
                 cell.set_state(1);
             } else {
                 cell.set_state(0);
@@ -155,20 +187,28 @@ setInterval(function () {
         var celly = stack[celly];
         if (celly.state == 1) {
             ctx.fillStyle = "rgba(0,0,0,1)";
+            // ctx.fillStyle = get_rand_color();
             ctx.fillRect(celly.coords.x, celly.coords.y, 1, 1);
         }
     }
     init_iteraton(stack);
-}, 1000/60);
+}, 1000 / 60);
+// }, 500);
 
-canvas.addEventListener("mousemove", function (e){
+canvas.addEventListener("mousemove", function (e) {
     let boundingRect = e.target.getBoundingClientRect();
-    console.log(`x: ${e.clientX}, y: ${e.clientY}`);
-    console.log(e.target.getBoundingClientRect());
-    console.log(`x: ${e.clientX - boundingRect.x}, y: ${e.clientY - boundingRect.y}`);
+    // console.log(`x: ${e.clientX}, y: ${e.clientY}`);
+    // console.log(e.target.getBoundingClientRect());
+    // console.log(`x: ${e.clientX - boundingRect.x}, y: ${e.clientY - boundingRect.y}`);
     let realX = e.clientX - boundingRect.x;
     let realY = e.clientY - boundingRect.y;
     let cell = search_in_stack_by_coords(stack, {x: realX, y: realY});
-    console.log(cell);
-    cell.set_state(1);
+    // console.log(cell);
+    if (typeof (cell) !== "undefined") {
+        cell.set_state(1);
+        for (const cellKey in cell.neighbors) {
+            cell.neighbors[cellKey].set_state(1);
+        }
+    }
+
 });
