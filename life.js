@@ -10,6 +10,7 @@ var render_speed = 100;
 var ctx = canvas.getContext('2d');
 
 var stack = {};
+var stop = true;
 var stackX = [];
 var stackY = [];
 var neighbors_matrix = [
@@ -106,13 +107,26 @@ function init_iteraton(stack) {
         } else if (cell.state === 1) {
             if ((alive_count === 2) || (alive_count === 3)) {
                 cell.set_state(1);
-            // } else
-            //     if (alive_count === 5) {
-            //     cell.set_state(0);
+                // } else
+                //     if (alive_count === 5) {
+                //     cell.set_state(0);
             } else {
                 cell.set_state(0);
             }
         }
+        // disease
+        // if (cell.state == 0) {
+        //     if (alive_count == 3) {
+        //         cell.set_state(1);
+        //     }
+        // } else if (cell.state == 1) {
+        //     if ((alive_count !== 2) && (alive_count !== 3)) {
+        //         cell.set_state(1);
+        //     } else {
+        //         cell.set_state(0);
+        //     }
+        // }
+        // end disease
     }
 }
 
@@ -148,13 +162,20 @@ class Cell {
     }
 }
 
-for (let i = 0; i < canvasParams.w; i++) {
-    for (let j = 0; j < canvasParams.h; j++) {
-        let new_cell = new Cell({x: i, y: j});
-        let temp_string = `${i}+${j}`;
-        stack[temp_string] = new_cell;
+function set_new_stack(stack) {
+    stack = {};
+    for (let i = 0; i < canvasParams.w; i++) {
+        for (let j = 0; j < canvasParams.h; j++) {
+            let new_cell = new Cell({x: i, y: j});
+            let temp_string = `${i}+${j}`;
+            stack[temp_string] = new_cell;
+        }
     }
+     return stack;
+
 }
+
+stack = set_new_stack(stack);
 
 
 for (cellKey in stack) {
@@ -195,11 +216,15 @@ let drawer = function () {
         }
     }
     init_iteraton(stack);
-    setTimeout(function () {
-        drawer();
-    }, 1000 / render_speed);
+    if (stop === false) {
+        setTimeout(function () {
+            drawer();
+        }, 1000 / render_speed);
+    } else {
+        // stop = false;
+    }
 }
-drawer();
+// drawer();
 // setTimeout(function () {
 //     drawer();
 // }, render_speed);
@@ -216,12 +241,12 @@ canvas.addEventListener("mousemove", function (e) {
     // console.log(cell);
     if (typeof (cell) !== "undefined") {
         cell.set_state(1);
-        for (const cellKey in cell.neighbors) {
-            if (cellKey % 2 == 0) {
-
-                cell.neighbors[cellKey].set_state(1);
-            }
-        }
+        // for (const cellKey in cell.neighbors) {
+        //     if (cellKey % 6 == 0) {
+        //
+        //         cell.neighbors[cellKey].set_state(1);
+        //     }
+        // }
     }
 });
 
@@ -234,6 +259,17 @@ document.getElementById("render_speed").addEventListener("input", function (e) {
     } else {
         fps_label.innerText = `${render_speed} FPS`;
     }
+});
 
-
+document.getElementById("controll_btn").addEventListener("click", function (e) {
+    let currentElement = e.target;
+    console.log(currentElement);
+    if (stop === true) {
+        stop = false;
+        drawer();
+        currentElement.innerText = "Stop";
+    } else {
+        currentElement.innerText = "Start";
+        stop = true;
+    }
 });
