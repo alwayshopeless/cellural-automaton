@@ -19,7 +19,7 @@ var neighbors_matrix = [
     {x: 1, y: -1},
 
     {x: -1, y: 0},
-    //{x: 0, y: 0}, // current cell
+    // {x: 0, y: 0}, // current cell
     {x: 1, y: 0},
 
     {x: -1, y: 1},
@@ -27,6 +27,37 @@ var neighbors_matrix = [
     {x: 1, y: 1},
 
 ];
+
+class Cell {
+    constructor(coords = {x: 0, y: 0}) {
+        this.state = 0;
+        this.old_state = this.state;
+        this.coords = coords;
+        this.neighbors = [];
+        this.has_changed = false;
+        // this.set_rand_state();
+    }
+
+    set_neighbors(neighbors) {
+        this.neighbors = neighbors;
+    }
+
+    set_rand_state() {
+        this.state = 0;
+        if (get_random_int(0, 1) === 1) {
+            if (get_random_int(0, 1) === 1) {
+                this.state = 1;
+            }
+        }
+    }
+
+    set_state(state) {
+        this.old_state = this.state;
+        this.state = state;
+    }
+
+}
+
 
 function isIdentyWeak(obj1, obj2) {
     if ((obj1.x == obj2.x) && (obj1.y == obj2.y)) {
@@ -65,7 +96,7 @@ function get_rand_color() {
             break;
     }
 
-    return `rgba(${red}, ${blue}, ${green}, 1)`;
+    return `rgba(${red}, ${blue}, ${green}, 0.1)`;
 }
 
 function sumOfCoords(coords1, coords2) {
@@ -88,16 +119,20 @@ function search_in_stack_by_coords(stack, coords) {
 function get_count_alive_neighbors(cellObj) {
     let alive_count = 0;
     for (neighborKey in cellObj.neighbors) {
-        if (cellObj.neighbors[neighborKey].state == 1) {
+        if (cellObj.neighbors[neighborKey].old_state === 1) {
             alive_count++;
         }
     }
     return alive_count;
 }
+// var new_stack = {};
+// new_stack = set_new_stack(new_stack);
 
 function init_iteraton(stack) {
+
     for (let cell_key in stack) {
         let cell = stack[cell_key];
+        // let new_cell = new_stack[cell_key];
         let alive_count = get_count_alive_neighbors(cell);
 
         if (cell.state === 0) {
@@ -107,27 +142,12 @@ function init_iteraton(stack) {
         } else if (cell.state === 1) {
             if ((alive_count === 2) || (alive_count === 3)) {
                 cell.set_state(1);
-                // } else
-                //     if (alive_count === 5) {
-                //     cell.set_state(0);
             } else {
                 cell.set_state(0);
             }
         }
-        // disease
-        // if (cell.state == 0) {
-        //     if (alive_count == 3) {
-        //         cell.set_state(1);
-        //     }
-        // } else if (cell.state == 1) {
-        //     if ((alive_count !== 2) && (alive_count !== 3)) {
-        //         cell.set_state(1);
-        //     } else {
-        //         cell.set_state(0);
-        //     }
-        // }
-        // end disease
     }
+
 }
 
 function get_random_int(min, max) {
@@ -136,99 +156,83 @@ function get_random_int(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-class Cell {
-    constructor(coords = {x: 0, y: 0}) {
-        this.state = 0;
-        this.coords = coords;
-        this.neighbors = [];
-        // this.set_rand_state();
-    }
 
-    set_neighbors(neighbors) {
-        this.neighbors = neighbors;
-    }
 
-    set_rand_state() {
-        this.state = 0;
-        if (get_random_int(0, 1) == 1) {
-            if (get_random_int(0, 1) == 1) {
-                this.state = 1;
-            }
-        }
-    }
-
-    set_state(state) {
-        this.state = state;
-    }
-}
-
-function set_new_stack(stack) {
-    stack = {};
+function set_new_stack(target_stack) {
+    target_stack = {};
     for (let i = 0; i < canvasParams.w; i++) {
         for (let j = 0; j < canvasParams.h; j++) {
             let new_cell = new Cell({x: i, y: j});
             let temp_string = `${i}+${j}`;
-            stack[temp_string] = new_cell;
+            target_stack[temp_string] = new_cell;
         }
     }
-     return stack;
+
+    for (cellKey in target_stack) {
+        let cell = target_stack[cellKey];
+        // var cellCoords = coords;
+        let cellCoords = cell.coords;
+        let neighbors_result = {};
+        // console.log(cell);
+        for (neighborKey in neighbors_matrix) {
+            let definedNeightbor = null;
+            neighbor_finded = false;
+            var neighborPos = sumOfCoords(neighbors_matrix[neighborKey], cellCoords);
+            if (inCoorsBorder(neighborPos)) {
+                var neighbor = search_in_stack_by_coords(target_stack, neighborPos);
+                neighbors_result[neighborKey] = neighbor;
+            }
+        }
+        cell.set_neighbors(neighbors_result);
+        // break;
+    }
+
+    return target_stack;
 
 }
 
 stack = set_new_stack(stack);
-
-
-for (cellKey in stack) {
-    var cell = stack[cellKey];
-    // var cellCoords = coords;
-    var cellCoords = cell.coords;
-    var neighbors_result = {};
-    // console.log(cell);
-    for (neighborKey in neighbors_matrix) {
-        var definedNeightbor = null;
-        neighbor_finded = false;
-        var neighborPos = sumOfCoords(neighbors_matrix[neighborKey], cellCoords);
-        if (inCoorsBorder(neighborPos)) {
-            var neighbor = search_in_stack_by_coords(stack, neighborPos);
-            neighbors_result[neighborKey] = neighbor;
-        }
-    }
-    cell.set_neighbors(neighbors_result);
-    // break;
-}
-
-
-var states = [3, 8, 5];
-var statesKey = 0;
-
-// for (let i = 0; i < 100; i++){
-//     init_iteraton(stack);
-// }
 
 let drawer = function () {
     ctx.clearRect(0, 0, canvasParams.w, canvasParams.h);
     for (var celly in stack) {
         var celly = stack[celly];
         if (celly.state == 1) {
-            ctx.fillStyle = "rgba(0,0,0,1)";
+            ctx.fillStyle = "rgba(0,0,0,0.4)";
             // ctx.fillStyle = get_rand_color();
             ctx.fillRect(celly.coords.x, celly.coords.y, 1, 1);
         }
     }
-    init_iteraton(stack);
     if (stop === false) {
-        setTimeout(function () {
-            drawer();
-        }, 1000 / render_speed);
+        init_iteraton(stack);
     } else {
         // stop = false;
     }
+    setTimeout(function () {
+        drawer();
+    }, 1000 / render_speed);
 }
-// drawer();
+drawer();
 // setTimeout(function () {
 //     drawer();
 // }, render_speed);
 // }, 500);
+var isDrawing = false;
+
+canvas.addEventListener('mousedown', e => {
+    x = e.offsetX;
+    y = e.offsetY;
+    isDrawing = true;
+});
+
+
+canvas.addEventListener('mouseup', e => {
+    if (isDrawing === true) {
+        x = 0;
+        y = 0;
+        isDrawing = false;
+    }
+});
 
 canvas.addEventListener("mousemove", function (e) {
     let boundingRect = e.target.getBoundingClientRect();
@@ -237,23 +241,26 @@ canvas.addEventListener("mousemove", function (e) {
     // console.log(`x: ${e.clientX - boundingRect.x}, y: ${e.clientY - boundingRect.y}`);
     let realX = e.clientX - boundingRect.x;
     let realY = e.clientY - boundingRect.y;
-    let cell = search_in_stack_by_coords(stack, {x: realX, y: realY});
-    // console.log(cell);
-    if (typeof (cell) !== "undefined") {
-        cell.set_state(1);
-        // for (const cellKey in cell.neighbors) {
-        //     if (cellKey % 6 == 0) {
-        //
-        //         cell.neighbors[cellKey].set_state(1);
-        //     }
-        // }
+    if (isDrawing) {
+        let cell = search_in_stack_by_coords(stack, {x: realX, y: realY});
+        // console.log(cell);
+        if (typeof (cell) !== "undefined") {
+            cell.set_state(1);
+            // for (const cellKey in cell.neighbors) {
+            //     if (cellKey % 6 == 0) {
+            //
+            //         cell.neighbors[cellKey].set_state(1);
+            //     }
+            // }
+        }
     }
+
 });
 
 let fps_label = document.getElementById("fps_label");
 document.getElementById("render_speed").addEventListener("input", function (e) {
     render_speed = parseInt(e.currentTarget.value);
-    if (render_speed == 61) {
+    if (render_speed === 61) {
         render_speed = 0;
         fps_label.innerText = `MAX FPS(no frame time limit)`;
     } else {
@@ -266,10 +273,15 @@ document.getElementById("controll_btn").addEventListener("click", function (e) {
     console.log(currentElement);
     if (stop === true) {
         stop = false;
-        drawer();
+        // drawer();
         currentElement.innerText = "Stop";
     } else {
         currentElement.innerText = "Start";
         stop = true;
     }
+});
+
+
+document.getElementById("reset_btn").addEventListener("click", function () {
+    stack = set_new_stack(stack);
 });
