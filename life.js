@@ -240,6 +240,21 @@ drawer();
 // }, 500);
 var isDrawing = false;
 
+
+function drawLine(context, x1, y1, x2, y2) {
+    context.beginPath();
+    // context.strokeStyle = 'rgba(200, 100, 200, 1)';
+    context.strokeStyle = 'white';
+    context.lineWidth = 2;
+    context.moveTo(x1, y1);
+    context.lineTo(x2, y2);
+    context.stroke();
+    context.closePath();
+}
+
+let x = 0;
+let y = 0;
+
 canvas.addEventListener('mousedown', e => {
     x = e.offsetX;
     y = e.offsetY;
@@ -249,10 +264,12 @@ canvas.addEventListener('mousedown', e => {
 
 canvas.addEventListener('mouseup', e => {
     if (isDrawing === true) {
+        drawLine(ctx, x, y, e.offsetX, e.offsetY);
         x = 0;
         y = 0;
         isDrawing = false;
     }
+
 });
 
 canvas.addEventListener("mousemove", function (e) {
@@ -260,6 +277,10 @@ canvas.addEventListener("mousemove", function (e) {
     let realX = e.clientX - boundingRect.x;
     let realY = e.clientY - boundingRect.y;
     if (isDrawing) {
+        drawLine(ctx, x, y, e.offsetX, e.offsetY);
+        x = e.offsetX;
+        y = e.offsetY;
+
         let cell = search_in_stack_by_coords(stack, {x: realX, y: realY});
         // console.log(cell);
         if (typeof (cell) !== "undefined") {
@@ -280,9 +301,9 @@ document.getElementById("render_speed").addEventListener("input", function (e) {
     render_speed = parseInt(e.currentTarget.value);
     if (render_speed === 61) {
         render_speed = 0;
-        fps_label.innerText = `MAX FPS(no frame time limit)`;
+        fps_label.innerText = `MAX IPS(no frame time limit)`;
     } else {
-        fps_label.innerText = `${render_speed} FPS`;
+        fps_label.innerText = `${render_speed} IPS`;
     }
 });
 

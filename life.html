@@ -9,8 +9,9 @@
 
     <style>
         canvas{
-            border: solid 1px red;
+            /*border: solid 1px red;*/
             image-rendering: crisp-edges;
+            image-rendering: pixelated;
             background-color: black;
         }
     </style>
@@ -19,7 +20,8 @@
 
     <canvas id="life"></canvas>
     <form>
-        <label id="fps_label" for="vol">60 FPS</label><br>
+        <p>Iterations Per Seconds</p>
+        <label id="fps_label" for="vol">60 IPS</label><br>
         <input type="range" id="render_speed" name="vol" min="1" max="61" value="60">
     </form>
     <div>
