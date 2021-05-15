@@ -2,6 +2,9 @@ var canvas = document.getElementById('life');
 const canvasParams = {
     w: 100,
     h: 100,
+    // random: false,
+    random: true,
+    clear: true,
 };
 canvas.width = canvas.width = canvasParams.w;
 canvas.height = canvas.height = canvasParams.h;
@@ -35,7 +38,9 @@ class Cell {
         this.coords = coords;
         this.neighbors = [];
         this.has_changed = false;
-        // this.set_rand_state();
+        if (canvasParams.random === true) {
+            this.set_rand_state();
+        }
     }
 
     set_neighbors(neighbors) {
@@ -96,7 +101,8 @@ function get_rand_color() {
             break;
     }
 
-    return `rgba(${red}, ${blue}, ${green}, 0.1)`;
+    // return `rgba(${red}, ${blue}, ${green}, 0.3)`;
+    return `rgba(200, 100, 200, 0.7)`;
 }
 
 function sumOfCoords(coords1, coords2) {
@@ -125,6 +131,7 @@ function get_count_alive_neighbors(cellObj) {
     }
     return alive_count;
 }
+
 // var new_stack = {};
 // new_stack = set_new_stack(new_stack);
 
@@ -147,6 +154,10 @@ function init_iteraton(stack) {
             }
         }
     }
+    for (let cell_key in stack) {
+        let cell = stack[cell_key];
+        cell.set_state(cell.state);
+    }
 
 }
 
@@ -155,7 +166,6 @@ function get_random_int(min, max) {
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-
 
 
 function set_new_stack(target_stack) {
@@ -192,14 +202,25 @@ function set_new_stack(target_stack) {
 }
 
 stack = set_new_stack(stack);
-
+var iter_count = 0;
+var color = get_rand_color();
 let drawer = function () {
-    ctx.clearRect(0, 0, canvasParams.w, canvasParams.h);
+    if (canvasParams.clear) {
+        // ctx.clearRect(0, 0, canvasParams.w, canvasParams.h);
+        ctx.fillStyle = "rgba(0,0,0,0.08)";
+        ctx.fillRect(0, 0, canvasParams.w, canvasParams.h);
+    }
     for (var celly in stack) {
         var celly = stack[celly];
         if (celly.state == 1) {
-            ctx.fillStyle = "rgba(0,0,0,0.4)";
-            // ctx.fillStyle = get_rand_color();
+            // ctx.fillStyle = "rgba(0,0,0,0.4)";
+            if(iter_count === 10){
+                color = get_rand_color();
+                ctx.fillStyle = color;
+                iter_count = 0;
+            } else {
+                iter_count++;
+            }
             ctx.fillRect(celly.coords.x, celly.coords.y, 1, 1);
         }
     }
@@ -236,9 +257,6 @@ canvas.addEventListener('mouseup', e => {
 
 canvas.addEventListener("mousemove", function (e) {
     let boundingRect = e.target.getBoundingClientRect();
-    // console.log(`x: ${e.clientX}, y: ${e.clientY}`);
-    // console.log(e.target.getBoundingClientRect());
-    // console.log(`x: ${e.clientX - boundingRect.x}, y: ${e.clientY - boundingRect.y}`);
     let realX = e.clientX - boundingRect.x;
     let realY = e.clientY - boundingRect.y;
     if (isDrawing) {
