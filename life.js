@@ -1,10 +1,19 @@
 var canvas = document.getElementById('life');
-const canvasParams = {
+
+const fieldParams = {
     w: 100,
     h: 100,
-    // random: false,
-    random: true,
+};
+let dot_size = 3;
+var canvasParams = {
+    dot_size: dot_size,
+    w: fieldParams.w * dot_size,
+    h: fieldParams.h * dot_size,
+    random: false,
+    // random: true,
     clear: true,
+    opacity: 0.01,
+    // clear: false,
 };
 canvas.width = canvas.width = canvasParams.w;
 canvas.height = canvas.height = canvasParams.h;
@@ -110,8 +119,8 @@ function sumOfCoords(coords1, coords2) {
 }
 
 function inCoorsBorder(coords) {
-    if (((coords.x >= 0) && (coords.x <= (canvasParams.w - 1))) &&
-        (coords.y >= 0) && (coords.y <= (canvasParams.h - 1))) {
+    if (((coords.x >= 0) && (coords.x <= (fieldParams.w - 1))) &&
+        (coords.y >= 0) && (coords.y <= (fieldParams.h - 1))) {
         return true;
     }
     return false;
@@ -170,8 +179,8 @@ function get_random_int(min, max) {
 
 function set_new_stack(target_stack) {
     target_stack = {};
-    for (let i = 0; i < canvasParams.w; i++) {
-        for (let j = 0; j < canvasParams.h; j++) {
+    for (let i = 0; i < fieldParams.w; i++) {
+        for (let j = 0; j < fieldParams.h; j++) {
             let new_cell = new Cell({x: i, y: j});
             let temp_string = `${i}+${j}`;
             target_stack[temp_string] = new_cell;
@@ -206,22 +215,27 @@ var iter_count = 0;
 var color = get_rand_color();
 let drawer = function () {
     if (canvasParams.clear) {
-        // ctx.clearRect(0, 0, canvasParams.w, canvasParams.h);
-        ctx.fillStyle = "rgba(0,0,0,0.08)";
+        ctx.clearRect(0, 0, canvasParams.w, canvasParams.h);
+    } else {
+        ctx.fillStyle = `rgba(0,0,0, ${canvasParams.opacity})`;
         ctx.fillRect(0, 0, canvasParams.w, canvasParams.h);
     }
     for (var celly in stack) {
         var celly = stack[celly];
         if (celly.state == 1) {
             // ctx.fillStyle = "rgba(0,0,0,0.4)";
-            if(iter_count === 10){
+            if (iter_count === 10) {
                 color = get_rand_color();
                 ctx.fillStyle = color;
                 iter_count = 0;
             } else {
                 iter_count++;
             }
-            ctx.fillRect(celly.coords.x, celly.coords.y, 1, 1);
+            let rect_coords = {
+                x: celly.coords.x * canvasParams.dot_size,
+                y: celly.coords.y * canvasParams.dot_size
+            };
+            ctx.fillRect(rect_coords.x, rect_coords.y, canvasParams.dot_size, canvasParams.dot_size);
         }
     }
     if (stop === false) {
@@ -282,23 +296,22 @@ canvas.addEventListener("mousemove", function (e) {
         x = e.offsetX;
         y = e.offsetY;
 
-        let cell = search_in_stack_by_coords(stack, {x: realX, y: realY});
-        // console.log(cell);
+        let cell = search_in_stack_by_coords(stack, {
+            x: Math.floor(realX / canvasParams.dot_size),
+            y: Math.floor(realY / canvasParams.dot_size),
+        });
         if (typeof (cell) !== "undefined") {
             cell.set_state(1);
-            // for (const cellKey in cell.neighbors) {
-            //     if (cellKey % 6 == 0) {
-            //
-            //         cell.neighbors[cellKey].set_state(1);
-            //     }
-            // }
         }
     }
 
 });
 
 let fps_label = document.getElementById("fps_label");
-document.getElementById("render_speed").addEventListener("input", function (e) {
+let render_speed_input = document.getElementById("render_speed");
+fps_label.innerText = render_speed_input.value + " IPS";
+
+render_speed_input.addEventListener("input", function (e) {
     render_speed = parseInt(e.currentTarget.value);
     if (render_speed === 61) {
         render_speed = 0;
@@ -306,6 +319,17 @@ document.getElementById("render_speed").addEventListener("input", function (e) {
     } else {
         fps_label.innerText = `${render_speed} IPS`;
     }
+});
+
+let plume_length_input = document.getElementById("plume_length");
+let plume_label = document.getElementById("plume_label");
+plume_label.innerText = render_speed_input.value + " opacity coeff.";
+plume_length_input.addEventListener("input", function (e) {
+    plume_length = parseInt(e.currentTarget.value);
+    // if (plume_length === 61) {
+        canvasParams.opacity = plume_length * 0.01;
+        plume_label.innerText = canvasParams.opacity; 
+    // }
 });
 
 document.getElementById("controll_btn").addEventListener("click", function (e) {
@@ -319,6 +343,17 @@ document.getElementById("controll_btn").addEventListener("click", function (e) {
         currentElement.innerText = "Start";
         stop = true;
     }
+});
+
+document.getElementById("rand_btn").addEventListener("click", function (e) {
+    let old_random_state = canvasParams.random;
+    canvasParams.random = true;
+    stack = set_new_stack(stack);
+    canvasParams.random = old_random_state;
+});
+
+document.getElementById("plume_btn").addEventListener("click", function (e) {
+    canvasParams.clear = (canvasParams.clear) ? false : true;
 });
 
 
