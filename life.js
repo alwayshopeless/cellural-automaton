@@ -244,6 +244,7 @@ var isDrawing = false;
 function drawLine(context, x1, y1, x2, y2) {
     context.beginPath();
     // context.strokeStyle = 'rgba(200, 100, 200, 1)';
+
     context.strokeStyle = 'white';
     context.lineWidth = 2;
     context.moveTo(x1, y1);
