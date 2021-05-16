@@ -1,14 +1,18 @@
 var canvas = document.getElementById('life');
 
 const fieldParams = {
-    w: 100,
-    h: 100,
+    w: 80,
+    h: 60,
 };
-let dot_size = 3;
+let dot_size = 10;
 var canvasParams = {
     dot_size: dot_size,
     w: fieldParams.w * dot_size,
     h: fieldParams.h * dot_size,
+    r: 100,
+    g: 200,
+    b: 200,
+
     random: false,
     // random: true,
     clear: true,
@@ -217,7 +221,8 @@ let drawer = function () {
     if (canvasParams.clear) {
         ctx.clearRect(0, 0, canvasParams.w, canvasParams.h);
     } else {
-        ctx.fillStyle = `rgba(0,0,0, ${canvasParams.opacity})`;
+        //rgba(200,100,200,1)
+        ctx.fillStyle = `rgba(${canvasParams.r}, ${canvasParams.g}, ${canvasParams.b}, ${canvasParams.opacity})`;
         ctx.fillRect(0, 0, canvasParams.w, canvasParams.h);
     }
     for (var celly in stack) {
@@ -328,7 +333,7 @@ plume_length_input.addEventListener("input", function (e) {
     plume_length = parseInt(e.currentTarget.value);
     // if (plume_length === 61) {
         canvasParams.opacity = plume_length * 0.01;
-        plume_label.innerText = canvasParams.opacity; 
+        plume_label.innerText = canvasParams.opacity;
     // }
 });
 
