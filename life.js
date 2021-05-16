@@ -9,9 +9,9 @@ var canvasParams = {
     dot_size: dot_size,
     w: fieldParams.w * dot_size,
     h: fieldParams.h * dot_size,
-    r: 100,
-    g: 200,
-    b: 200,
+    r: 0,
+    g: 0,
+    b: 0,
 
     random: false,
     // random: true,
