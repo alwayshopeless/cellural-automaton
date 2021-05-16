@@ -2,7 +2,7 @@ var canvas = document.getElementById('life');
 
 const fieldParams = {
     w: 80,
-    h: 60,
+    h: 50,
 };
 let dot_size = 10;
 var canvasParams = {
